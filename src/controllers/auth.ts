@@ -1,11 +1,13 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
+
 import authService, { verifyToken } from "../services/auth";
 import { UserData } from "../types/UserData";
 import { extractJwtToken, sanitizeUserData } from "../utils/authUtils";
 
 export async function registerUserHandler(
   request: Request,
-  response: Response
+  response: Response,
+  next: NextFunction
 ) {
   try {
     const userFromRequestBody = request.body as UserData;
@@ -18,11 +20,7 @@ export async function registerUserHandler(
       data: sanitizedUser,
     });
   } catch (error) {
-    console.error("Error registering user:", error);
-    response.status(500).json({
-      status: "error",
-      message: "Internal server error",
-    });
+    next(error);
   }
 }
 

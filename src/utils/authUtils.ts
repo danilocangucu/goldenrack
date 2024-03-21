@@ -3,6 +3,7 @@ import bcrypt from "bcrypt";
 import Joi from "joi";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
+import boom, { boomify } from "@hapi/boom";
 
 import { JwtProperty } from "../types/JwtProperty";
 import { DecodedJwtPayload } from "../types/DecodedJwtPayload";
@@ -16,11 +17,11 @@ export async function hashPassword(password: string): Promise<string> {
   try {
     const hashedPassword = await bcrypt.hash(password, saltRounds);
     return hashedPassword;
-  } catch (error: unknown) {
+  } catch (error) {
     if (error instanceof Error) {
-      throw new Error("Error hashing password: " + error.message);
+      throw boom.internal("Error hashing password: " + error.message);
     } else {
-      throw new Error("Unknown error occurred while hashing password.");
+      throw boom.internal("Unknown error occurred while hashing password.");
     }
   }
 }
@@ -32,8 +33,15 @@ export async function isUserNameUnique(userName: string): Promise<boolean> {
     });
     return !existingUser;
   } catch (error) {
-    console.error("Error checking username uniqueness:", error);
-    throw error;
+    if (error instanceof Error) {
+      throw boomify(error, {
+        message: "Error checking username uniqueness",
+      });
+    } else {
+      throw boom.internal(
+        "Unexpected error occurred while checking username uniqueness"
+      );
+    }
   }
 }
 
@@ -42,11 +50,17 @@ export async function isEmailAvailable(email: string): Promise<boolean> {
     const existingUser: UserDocument | null = await User.findOne({ email });
     return !existingUser;
   } catch (error) {
-    console.error("Error checking email availability:", error);
-    throw error;
+    if (error instanceof Error) {
+      throw boomify(error, { message: "Error checking email availability" });
+    } else {
+      throw boom.internal(
+        "Unexpected error occurred while checking email availability"
+      );
+    }
   }
 }
 
+// TODO errors
 export function validateRequestBody(schema: Joi.ObjectSchema) {
   return function (request: Request, response: Response, next: NextFunction) {
     const { error } = schema.validate(request.body);
@@ -60,6 +74,7 @@ export function validateRequestBody(schema: Joi.ObjectSchema) {
   };
 }
 
+// TODO errors
 export async function comparePasswords(
   password: string,
   hashedPassword: string
@@ -67,6 +82,7 @@ export async function comparePasswords(
   return await bcrypt.compare(password, hashedPassword);
 }
 
+// TODO errors
 export function generateAuthToken(user: UserData): string {
   const token = jwt.sign(
     { userId: user.id, userRole: user.role, isUserBanned: user.banned },
@@ -78,6 +94,7 @@ export function generateAuthToken(user: UserData): string {
   return token;
 }
 
+// TODO errors
 export function extractJwtToken(authorizationHeader: string): string | null {
   if (!authorizationHeader) {
     return null;
@@ -91,6 +108,7 @@ export function extractJwtToken(authorizationHeader: string): string | null {
   return tokenParts[1];
 }
 
+// TODO errors
 export function verifyJwtToken(jwtToken: string): DecodedJwtPayload | null {
   try {
     const decodedToken = jwt.verify(jwtToken, secret);
@@ -101,6 +119,7 @@ export function verifyJwtToken(jwtToken: string): DecodedJwtPayload | null {
   }
 }
 
+// TODO errors
 export function extractPropertyFromJwt<T extends DecodedJwtPayload>(
   decodedToken: T,
   property: JwtProperty
@@ -108,6 +127,7 @@ export function extractPropertyFromJwt<T extends DecodedJwtPayload>(
   return decodedToken[property];
 }
 
+// TODO errors
 export function sanitizeUserData(
   user: UserDocument
 ): Omit<UserData, "password" | "hashedPassword"> {

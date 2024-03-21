@@ -7,10 +7,12 @@ export type UserDocument = Document & UserData;
 const UserSchema = new mongoose.Schema({
   email: {
     type: String,
+    unique: true,
     required: true,
   },
   userName: {
     type: String,
+    unique: true,
     required: true,
   },
   password: String,

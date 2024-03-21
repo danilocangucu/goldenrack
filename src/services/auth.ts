@@ -1,3 +1,5 @@
+import boom from "@hapi/boom";
+
 import User, { UserDocument } from "../model/User";
 import { UserData } from "../types/UserData";
 import {
@@ -12,21 +14,32 @@ import {
 import { JwtProperty } from "../types/JwtProperty";
 
 async function registerUser(userData: UserData) {
-  if (!isUserNameUnique(userData.userName)) {
-    throw new Error("Username already exists");
+  const userNameAvailability = await isUserNameUnique(userData.userName);
+
+  if (!userNameAvailability) {
+    throw boom.badRequest("Username already exists");
   }
 
-  if (!isEmailAvailable(userData.email)) {
-    throw new Error("Email already registered");
+  const emailAvailability = await isEmailAvailable(userData.email);
+
+  if (!emailAvailability) {
+    throw boom.badRequest("Email already registered");
   }
 
   const hashedPassword = await hashPassword(userData.password!);
   userData.hashedPassword = hashedPassword;
 
-  const newUser = new User(userData);
-  await newUser.save();
-
-  return newUser;
+  try {
+    const newUser = new User(userData);
+    await newUser.save();
+    return newUser;
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      throw boom.internal("Error saving new user: " + error.message);
+    } else {
+      throw boom.internal("Unknown error occurred while saving new user.");
+    }
+  }
 }
 
 export async function loginUser(

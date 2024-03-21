@@ -6,11 +6,11 @@ const port = process.env.PORT as string;
 
 mongoose
   .connect(mongodbUrl, {
-    dbName: "vintagecarsmarket",
+    dbName: "goldenrack",
   })
   .then(() => {
     app.listen(port, () => {
-      console.log("Database vintagecarsmarket is connected");
+      console.log("Database goldenrack is connected");
       console.log(`Server is running on http://localhost:${port}`);
     });
   })
