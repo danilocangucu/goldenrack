@@ -21,4 +21,4 @@ const StoreSchema = new mongoose.Schema({
   },
 });
 
-export default mongoose.model<StoreDocument>("Store", StoreSchema);
+export default mongoose.model<StoreDocument>("Stores", StoreSchema);

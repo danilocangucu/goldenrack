@@ -20,6 +20,6 @@ const ShippingInformationSchema = new mongoose.Schema({
 });
 
 export default mongoose.model<ShippingInformationDocument>(
-  "ShippingInformation",
+  "ShippingInformations",
   ShippingInformationSchema
 );
