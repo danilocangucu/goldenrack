@@ -8,3 +8,4 @@ package.json
 yarn.lock
 *.lock
 *.log
+.DS_Store
