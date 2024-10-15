@@ -10,6 +10,11 @@ const baseUrl = "/api/v1";
 const app = express();
 app.use(express.json());
 
+// TODO improve health check
+app.get(`${baseUrl}/health`, (_, res) => {
+  res.status(200).json({ message: "Server is running" });
+});
+
 app.use(`${baseUrl}/records`, recordsRouter);
 app.use(`${baseUrl}/auth`, authRouter);
 
